@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Scan Results</h3>
+                    <a href="/" class="btn btn-outline-primary">New Scan</a>
+                </div>
+                <div class="card-body">
+                    <h4>Target: {{ results.target_url }}</h4>
+                    <p class="text-muted">Scan completed at: {{ results.timestamp }}</p>
+                    
+                    {% if results.summary is defined %}
+                    <!-- Full scan results with summary -->
+                    <div class="mt-4">
+                        <h5 class="mb-3">Summary</h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body text-center">
+                                        <div class="d-flex align-items-center justify-content-center mb-2">
+                                            <div class="risk-indicator high-risk"></div>
+                                        </div>
+                                        <h3 class="text-danger">{{ results.summary.high|default(0) }}</h3>
+                                        <p class="mb-0 text-muted">High Risk</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body text-center">
+                                        <div class="d-flex align-items-center justify-content-center mb-2">
+                                            <div class="risk-indicator medium-risk"></div>
+                                        </div>
+                                        <h3 class="text-warning">{{ results.summary.medium|default(0) }}</h3>
+                                        <p class="mb-0 text-muted">Medium Risk</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body text-center">
+                                        <div class="d-flex align-items-center justify-content-center mb-2">
+                                            <div class="risk-indicator low-risk"></div>
+                                        </div>
+                                        <h3 class="text-info">{{ results.summary.low|default(0) }}</h3>
+                                        <p class="mb-0 text-muted">Low Risk</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body text-center">
+                                        <div class="d-flex align-items-center justify-content-center mb-2">
+                                            <div class="risk-indicator info-risk"></div>
+                                        </div>
+                                        <h3 class="text-secondary">{{ results.summary.info|default(0) }}</h3>
+                                        <p class="mb-0 text-muted">Informational</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <h5 class="mb-4">Detailed Findings</h5>
+                        
+                        {% for category, issues in results.vulnerabilities.items() %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-transparent">
+                                <h5 class="mb-0">{{ category|replace('_', ' ')|title }}</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if issues|length > 0 %}
+                                    {% for issue in issues %}
+                                    <div class="vulnerability-item mb-3 p-3 rounded">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="risk-badge {{ issue.severity }}-risk me-2"></div>
+                                            <h6 class="mb-0">{{ issue.title }}</h6>
+                                        </div>
+                                        <p class="mb-2">{{ issue.description }}</p>
+                                        <p class="mb-2"><strong>URL:</strong> <a href="{{ issue.url }}" target="_blank" class="text-primary">{{ issue.url }}</a></p>
+                                        {% if issue.details %}
+                                        <div class="mt-2">
+                                            <strong>Details:</strong>
+                                            <pre class="code-block p-3 mt-2"><code>{{ issue.details }}</code></pre>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                <div class="alert border-0">
+                                    <p class="mb-0 text-success"><i class="fas fa-check-circle me-2"></i>No issues found in this category.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% elif results.results is defined %}
+                    <!-- Individual scan results -->
+                    <div class="mt-5">
+                        <h5 class="mb-4">Scan Results for {{ results.scan_type|replace('_', ' ')|title }}</h5>
+                        
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                {% if results.results|length > 0 %}
+                                    {% for issue in results.results %}
+                                    <div class="vulnerability-item mb-3 p-3 rounded">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="risk-badge {{ issue.severity }}-risk me-2"></div>
+                                            <h6 class="mb-0">{{ issue.title }}</h6>
+                                        </div>
+                                        <p class="mb-2">{{ issue.description }}</p>
+                                        <p class="mb-2"><strong>URL:</strong> <a href="{{ issue.url }}" target="_blank" class="text-primary">{{ issue.url }}</a></p>
+                                        {% if issue.details %}
+                                        <div class="mt-2">
+                                            <strong>Details:</strong>
+                                            <pre class="code-block p-3 mt-2"><code>{{ issue.details }}</code></pre>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                <div class="alert border-0">
+                                    <p class="mb-0 text-success"><i class="fas fa-check-circle me-2"></i>No issues found.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <!-- No results or unknown format -->
+                    <div class="mt-4">
+                        <div class="alert border-0">
+                            <p class="mb-0 text-info"><i class="fas fa-info-circle me-2"></i>No scan results available or invalid scan format.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+    }
+    
+    .card-header {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .vulnerability-item {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-left: 4px solid transparent;
+    }
+    
+    .vulnerability-item.high-severity {
+        border-left-color: #dc3545;
+    }
+    
+    .vulnerability-item.medium-severity {
+        border-left-color: #ffc107;
+    }
+    
+    .vulnerability-item.low-severity {
+        border-left-color: #0dcaf0;
+    }
+    
+    .risk-indicator {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        position: relative;
+    }
+    
+    .high-risk {
+        background-color: rgba(220, 53, 69, 0.2);
+        border: 2px solid #dc3545;
+    }
+    
+    .medium-risk {
+        background-color: rgba(255, 193, 7, 0.2);
+        border: 2px solid #ffc107;
+    }
+    
+    .low-risk {
+        background-color: rgba(13, 202, 240, 0.2);
+        border: 2px solid #0dcaf0;
+    }
+    
+    .info-risk {
+        background-color: rgba(108, 117, 125, 0.2);
+        border: 2px solid #6c757d;
+    }
+    
+    .risk-badge {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+    
+    .high-risk {
+        background-color: #dc3545;
+    }
+    
+    .medium-risk {
+        background-color: #ffc107;
+    }
+    
+    .low-risk {
+        background-color: #0dcaf0;
+    }
+    
+    .info-risk {
+        background-color: #6c757d;
+    }
+    
+    .code-block {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.9rem;
+        overflow-x: auto;
+    }
+    
+    .btn-outline-primary {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+</style>
+{% endblock %}

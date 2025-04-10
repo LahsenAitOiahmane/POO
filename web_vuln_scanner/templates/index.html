@@ -1,0 +1,627 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <!-- Initial scan input panel -->
+        <div class="scan-panel active" id="url-input-panel">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="hero-title mb-4 fade-in">Is Your Website <span class="gradient-text">Secure?</span></h1>
+                    <p class="hero-subtitle mb-5 fade-in delay-1">Scan for vulnerabilities and protect your digital assets.</p>
+                    
+                    <div class="search-container fade-in delay-2">
+                        <form id="scan-form" method="post" action="/scan">
+                            <div class="input-group">
+                                <input type="url" class="form-control" id="target-url" name="target_url" 
+                                    placeholder="Enter website URL (e.g., https://example.com)" required>
+                                <button type="button" id="next-btn" class="btn btn-primary px-4">
+                                    <i class="fas fa-arrow-right me-2"></i>Next
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="features-row mt-5 fade-in delay-3">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <span>SQL Injection</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <span>XSS</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <span>CSRF</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <span>Headers</span>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <span>Open Directory</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scan options panel -->
+        <div class="scan-panel" id="scan-options-panel">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5">
+                        <h2 class="mb-3">Configure Your Scan</h2>
+                        <p class="text-muted">Target: <span id="target-display" class="fw-bold text-primary"></span></p>
+                    </div>
+                    
+                    <div class="card scan-options-card">
+                        <div class="card-body">
+                            <form id="scan-options-form" method="post" action="/scan">
+                                <input type="hidden" id="final-target-url" name="target_url">
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <h4 class="mb-3"><i class="fas fa-crosshairs me-2"></i>Vulnerabilities to Scan</h4>
+                                        <div class="vulnerability-options">
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" id="vuln-all" name="vulnerabilities" value="all" checked>
+                                                <label class="form-check-label" for="vuln-all">All Vulnerabilities</label>
+                                            </div>
+                                            <div class="individual-vulnerabilities">
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="vuln-sql" name="vulnerabilities" value="sql_injection">
+                                                    <label class="form-check-label" for="vuln-sql">SQL Injection</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="vuln-xss" name="vulnerabilities" value="xss">
+                                                    <label class="form-check-label" for="vuln-xss">Cross-Site Scripting (XSS)</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="vuln-csrf" name="vulnerabilities" value="csrf">
+                                                    <label class="form-check-label" for="vuln-csrf">Cross-Site Request Forgery (CSRF)</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="vuln-headers" name="vulnerabilities" value="headers">
+                                                    <label class="form-check-label" for="vuln-headers">Security Headers</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="vuln-directory" name="vulnerabilities" value="open_directory">
+                                                    <label class="form-check-label" for="vuln-directory">Open Directory</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h4 class="mb-3"><i class="fas fa-tachometer-alt me-2"></i>Scan Intensity</h4>
+                                        <div class="scan-intensity mb-4">
+                                            <div class="form-check custom-radio mb-3">
+                                                <input class="form-check-input" type="radio" name="scan_intensity" id="intensity-fast" value="fast" checked>
+                                                <label class="form-check-label" for="intensity-fast">
+                                                    <span class="intensity-label">Fast Scan</span>
+                                                    <span class="intensity-desc">Quick overview with minimal requests</span>
+                                                </label>
+                                            </div>
+                                            <div class="form-check custom-radio mb-3">
+                                                <input class="form-check-input" type="radio" name="scan_intensity" id="intensity-medium" value="medium">
+                                                <label class="form-check-label" for="intensity-medium">
+                                                    <span class="intensity-label">Medium Scan</span>
+                                                    <span class="intensity-desc">Balanced approach with moderate testing</span>
+                                                </label>
+                                            </div>
+                                            <div class="form-check custom-radio mb-3">
+                                                <input class="form-check-input" type="radio" name="scan_intensity" id="intensity-thorough" value="thorough">
+                                                <label class="form-check-label" for="intensity-thorough">
+                                                    <span class="intensity-label">Thorough Scan</span>
+                                                    <span class="intensity-desc">Comprehensive testing with extensive payloads</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <h4 class="mb-3"><i class="fas fa-cogs me-2"></i>Advanced Options</h4>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="crawl-site" name="crawl_site" value="true" checked>
+                                            <label class="form-check-label" for="crawl-site">Crawl website for additional pages</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="follow-redirects" name="follow_redirects" value="true" checked>
+                                            <label class="form-check-label" for="follow-redirects">Follow redirects</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="buttons-row text-center mt-4">
+                                    <button type="button" id="back-btn" class="btn btn-outline-secondary me-3">
+                                        <i class="fas fa-arrow-left me-2"></i>Back
+                                    </button>
+                                    <button type="submit" id="start-scan-btn" class="btn btn-primary btn-lg px-5">
+                                        <i class="fas fa-radar me-2"></i>Start Scan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading" class="loading-overlay d-none">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Scanning in progress<span class="dot-animation">...</span></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 10;
+        padding: 80px 0;
+    }
+    
+    /* Scan panels and transitions */
+    .scan-panel {
+        opacity: 0;
+        transform: translateX(50px);
+        visibility: hidden;
+        transition: transform 0.5s ease, opacity 0.5s ease, visibility 0.5s ease;
+        position: absolute;
+        width: 100%;
+        left: 0;
+    }
+    
+    .scan-panel.active {
+        opacity: 1;
+        transform: translateX(0);
+        visibility: visible;
+        position: relative;
+    }
+    
+    /* Original styles */
+    .hero-title {
+        font-size: 5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 3rem;
+        }
+    }
+    
+    .gradient-text {
+        background: linear-gradient(to right, #3b82f6, #4f46e5, #8b5cf6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.5rem;
+        font-weight: 400;
+        color: var(--text-color);
+        max-width: 700px;
+        margin: 0 auto 3rem;
+    }
+    
+    .search-container {
+        max-width: 700px;
+        margin: 0 auto;
+        position: relative;
+    }
+    
+    .form-control {
+        height: 60px;
+        border-radius: 12px;
+        padding: 0 20px;
+        font-size: 1.1rem;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background-color: rgba(30, 41, 59, 0.5);
+        backdrop-filter: blur(10px);
+        color: var(--text-color);
+    }
+    
+    .form-control:focus {
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-primary {
+        height: 60px;
+        border-radius: 12px;
+        padding: 0 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background: linear-gradient(to right, #3b82f6, #4f46e5);
+        border: none;
+        min-width: 120px;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(to right, #4f46e5, #3b82f6);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-secondary {
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-color);
+        background: rgba(30, 41, 59, 0.3);
+    }
+    
+    .btn-outline-secondary:hover {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .input-group {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+    }
+    
+    /* Scan options card */
+    .scan-options-card {
+        background-color: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Form check switches */
+    .form-check-input {
+        background-color: rgba(30, 41, 59, 0.7);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .form-check-label {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .intensity-label {
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+    
+    .intensity-desc {
+        font-size: 0.85rem;
+        opacity: 0.7;
+        margin-top: 3px;
+    }
+    
+    /* Custom radio buttons */
+    .custom-radio {
+        background: rgba(30, 41, 59, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .custom-radio:hover {
+        background: rgba(30, 41, 59, 0.5);
+    }
+    
+    .custom-radio input:checked + label {
+        color: var(--primary-color);
+    }
+    
+    .custom-radio input:checked + label .intensity-label {
+        color: var(--primary-color);
+    }
+    
+    /* Features row */
+    .features-row {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 25px;
+        margin-top: 5rem;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        border-radius: 10px;
+        background-color: rgba(30, 41, 59, 0.6);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #f8fafc;
+    }
+    
+    .feature-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.3);
+        border-color: rgba(139, 92, 246, 0.4);
+        background-color: rgba(30, 41, 59, 0.8);
+    }
+    
+    .feature-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-color);
+        background: rgba(139, 92, 246, 0.15);
+        border-radius: 8px;
+        padding: 7px;
+        font-size: 1.1rem;
+        box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+    }
+    
+    /* Each feature icon gets a distinct color */
+    .feature-item:nth-child(1) .feature-icon {
+        color: #3b82f6;
+        background: rgba(59, 130, 246, 0.15);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    }
+    
+    .feature-item:nth-child(2) .feature-icon {
+        color: #8b5cf6;
+        background: rgba(139, 92, 246, 0.15);
+        box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+    }
+    
+    .feature-item:nth-child(3) .feature-icon {
+        color: #2563eb;
+        background: rgba(37, 99, 235, 0.15);
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+    }
+    
+    .feature-item:nth-child(4) .feature-icon {
+        color: #f59e0b;
+        background: rgba(245, 158, 11, 0.15);
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+    
+    .feature-item:nth-child(5) .feature-icon {
+        color: #ec4899;
+        background: rgba(236, 72, 153, 0.15);
+        box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+    }
+    
+    /* Loading overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(13, 29, 49, 0.9);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .loading-content {
+        text-align: center;
+    }
+    
+    .spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid var(--primary-color);
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Animation for dots */
+    .dot-animation {
+        display: inline-block;
+        animation: dotAnimation 1.5s infinite;
+    }
+    
+    @keyframes dotAnimation {
+        0% { opacity: 0.3; }
+        50% { opacity: 1; }
+        100% { opacity: 0.3; }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Panel switching logic
+    const urlInputPanel = document.getElementById('url-input-panel');
+    const scanOptionsPanel = document.getElementById('scan-options-panel');
+    const nextBtn = document.getElementById('next-btn');
+    const backBtn = document.getElementById('back-btn');
+    const targetUrl = document.getElementById('target-url');
+    const targetDisplay = document.getElementById('target-display');
+    const finalTargetUrl = document.getElementById('final-target-url');
+    const loadingOverlay = document.getElementById('loading');
+    const scanOptionsForm = document.getElementById('scan-options-form');
+    const vulnAll = document.getElementById('vuln-all');
+    const individualVulns = document.querySelectorAll('.individual-vulnerabilities input');
+    
+    // Toggle between URL input and scan options
+    nextBtn.addEventListener('click', function() {
+        // Validate URL
+        if (!isValidUrl(targetUrl.value.trim())) {
+            showUrlInputError('Please enter a valid URL including http:// or https://');
+            return;
+        }
+        
+        // Update the displayed URL and hidden field
+        targetDisplay.textContent = targetUrl.value.trim();
+        finalTargetUrl.value = targetUrl.value.trim();
+        
+        // Transition to scan options panel
+        urlInputPanel.classList.remove('active');
+        setTimeout(() => {
+            scanOptionsPanel.classList.add('active');
+        }, 300);
+    });
+    
+    // Go back to URL input panel
+    backBtn.addEventListener('click', function() {
+        scanOptionsPanel.classList.remove('active');
+        setTimeout(() => {
+            urlInputPanel.classList.add('active');
+        }, 300);
+    });
+    
+    // Handle "All Vulnerabilities" toggle
+    vulnAll.addEventListener('change', function() {
+        if (this.checked) {
+            individualVulns.forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.disabled = true;
+            });
+        } else {
+            individualVulns.forEach(checkbox => {
+                checkbox.disabled = false;
+            });
+        }
+    });
+    
+    // Handle individual vulnerability checkboxes
+    individualVulns.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // If any individual checkbox is checked, uncheck "All"
+            if (this.checked) {
+                vulnAll.checked = false;
+            }
+            
+            // If no individual checkbox is checked, check "All"
+            let anyChecked = false;
+            individualVulns.forEach(cb => {
+                if (cb.checked) anyChecked = true;
+            });
+            
+            if (!anyChecked) {
+                vulnAll.checked = true;
+                individualVulns.forEach(cb => {
+                    cb.disabled = true;
+                });
+            }
+        });
+    });
+    
+    // Handle form submission
+    scanOptionsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading overlay
+        loadingOverlay.classList.remove('d-none');
+        
+        // Submit the form
+        const formData = new FormData(this);
+        
+        fetch('/scan', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                // Hide loading and show error
+                loadingOverlay.classList.add('d-none');
+                showError(data.error);
+            } else if (data.redirect) {
+                // Redirect to results page
+                window.location.href = data.redirect;
+            }
+        })
+        .catch(error => {
+            loadingOverlay.classList.add('d-none');
+            showError('Connection error. Please try again.');
+        });
+    });
+    
+    // URL validation
+    function isValidUrl(url) {
+        try {
+            const parsedUrl = new URL(url);
+            return ['http:', 'https:'].includes(parsedUrl.protocol);
+        } catch (e) {
+            return false;
+        }
+    }
+    
+    // Show URL input error
+    function showUrlInputError(message) {
+        targetUrl.classList.add('is-invalid');
+        if (!document.querySelector('.invalid-feedback')) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'invalid-feedback';
+            errorDiv.textContent = message;
+            targetUrl.parentNode.appendChild(errorDiv);
+        }
+    }
+    
+    // Clear URL input error
+    function clearUrlInputError() {
+        targetUrl.classList.remove('is-invalid');
+        const errorFeedback = document.querySelector('.invalid-feedback');
+        if (errorFeedback) errorFeedback.remove();
+    }
+    
+    // Show general error message
+    function showError(message) {
+        const container = document.querySelector('.search-container');
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger mt-3 fade-in';
+        alertDiv.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
+        container.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+    
+    // Validate URL on input
+    targetUrl.addEventListener('input', function() {
+        if (this.value.trim() && isValidUrl(this.value.trim())) {
+            clearUrlInputError();
+        }
+    });
+});
+</script>
+{% endblock %}
